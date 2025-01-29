@@ -9,7 +9,9 @@ from src.q1_memory import q1_memory
 class TestQ1Functions(unittest.TestCase):
 
     def setUp(self):
-        """This method will run before each test, setting up the temporary test environment."""
+        """This method will run before each test,
+        setting up the temporary test environment.
+        """
         self.test_data = []
 
     def create_test_file(self, test_data):
@@ -39,6 +41,27 @@ class TestQ1Functions(unittest.TestCase):
         self.assertEqual(result_time, expected)
         self.assertEqual(result_memory, expected)
 
+    def test_two_dates_with_distinct_activity(self):
+        """Test with two dates where each has a distinct top user."""
+        test_data = [
+            {"date": "2025-01-01T00:00:00", "user": {"username": "user_1"}},
+            {"date": "2025-01-01T00:00:01", "user": {"username": "user_1"}},
+            {"date": "2025-01-02T00:00:00", "user": {"username": "user_2"}},
+            {"date": "2025-01-02T00:10:00", "user": {"username": "user_2"}},
+            {"date": "2025-01-02T00:00:02", "user": {"username": "user_3"}},
+        ]
+        file_path = self.create_test_file(test_data)
+
+        result_time = q1_time(file_path)
+        result_memory = q1_memory(file_path)
+
+        expected = [
+            (date(2025, 1, 2), "user_2"),
+            (date(2025, 1, 1), "user_1")
+        ]
+
+        self.assertEqual(result_time, expected)
+        self.assertEqual(result_memory, expected)
 
 
 if __name__ == "__main__":
