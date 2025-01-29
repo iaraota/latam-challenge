@@ -69,7 +69,11 @@ class TestQ1Functions(unittest.TestCase):
         """
         test_data = []
         for i in range(1, 11):
-            date_str = f"2025-01-{i:02d}T00:00:"
+            # set up the date string, changes day for each step
+            # in the loop, don't include seconds
+            # the seconds will be different for each activity
+            # this ensure we test different times for the same date
+            date_str = f"2025-01-{i:02d}T00:00:" 
             test_data.extend([
                 {"date": date_str+"00", "user": {"username": f"user_{i}"}},
                 {"date": date_str+"01", "user": {"username": f"user_{i}"}},
@@ -91,6 +95,31 @@ class TestQ1Functions(unittest.TestCase):
         self.assertEqual(result_time, expected)
         self.assertEqual(result_memory, expected)
 
+    def test_top_10_dates_with_encrease_activity(self):
+        """Test with more than 10 dates, each having an increasing activity
+        count, but different users.
+        """
+        test_data = []
+        for i in range(1, 21):
+            # set up the date string, changes day for each step
+            # in the loop, don't include seconds
+            # the seconds will be different for each activity
+            # this ensure we test different times for the same date
+            date_str = f"2025-01-{i:02d}T00:00:"
+            for j in range(i):
+                test_data.append({"date": date_str+f"{j:02d}",
+                                  "user": {"username": f"user_{i}"}})
+
+        file_path = self.create_test_file(test_data)
+
+        # Run both functions
+        result_time = q1_time(file_path)
+        result_memory = q1_memory(file_path)
+
+        expected = [(date(2025, 1, i), f"user_{i}") for i in range(20, 10, -1)]
+
+        self.assertEqual(result_time, expected)
+        self.assertEqual(result_memory, expected)
 
 if __name__ == "__main__":
     unittest.main()
