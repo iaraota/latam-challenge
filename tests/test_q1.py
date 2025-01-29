@@ -63,6 +63,34 @@ class TestQ1Functions(unittest.TestCase):
         self.assertEqual(result_time, expected)
         self.assertEqual(result_memory, expected)
 
+    def test_top_10_dates_with_same_activity(self):
+        """Test with more than 10 dates, each having the same activity
+        count, but different users.
+        """
+        test_data = []
+        for i in range(1, 11):
+            date_str = f"2025-01-{i:02d}T00:00:"
+            test_data.extend([
+                {"date": date_str+"00", "user": {"username": f"user_{i}"}},
+                {"date": date_str+"01", "user": {"username": f"user_{i}"}},
+                # Add a user that is not the top user
+                {"date": date_str+"03", "user": {"username": "user_not_top"}},
+            ])
+
+        # Add an 11th date with one entry, which should not be in the result
+        test_data.append({"date": "2025-01-11T00:00:00", "user": 
+                          {"username": "user_11"}})
+
+        file_path = self.create_test_file(test_data)
+
+        result_time = q1_time(file_path)
+        result_memory = q1_memory(file_path)
+
+        expected = [(date(2025, 1, i), f"user_{i}") for i in range(1, 11)]
+
+        self.assertEqual(result_time, expected)
+        self.assertEqual(result_memory, expected)
+
 
 if __name__ == "__main__":
     unittest.main()
