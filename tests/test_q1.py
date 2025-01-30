@@ -1,4 +1,5 @@
 import unittest
+import os
 import tempfile
 import json
 from datetime import date
@@ -7,6 +8,8 @@ from src.q1_memory import q1_memory
 
 
 class TestQ1Functions(unittest.TestCase):
+    """Test suite for q1_time and q1_memory functions.
+    """
 
     def setUp(self):
         """This method will run before each test,
@@ -21,7 +24,14 @@ class TestQ1Functions(unittest.TestCase):
                                          encoding='utf-8') as f:
             for entry in test_data:
                 f.write(json.dumps(entry) + '\n')
+            self.test_data.append(f.name)
             return f.name  # Return the file path
+
+    def tearDown(self):
+        """This method will run after each test,
+        cleaning up the temporary test environment."""
+        for file in self.test_data:
+            os.remove(file)
 
     def test_single_date_single_user(self):
         """Test with one date and one user."""
