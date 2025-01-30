@@ -7,6 +7,9 @@ import pandas as pd
 def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
     """Find the top user for each of the top 10 dates with the most activity.
 
+    Note: For optimizing time, we use Pandas DataFrame to process the data
+    which is usually very fast due to its vectorized operations.
+
     Parameters
     ----------
     file_path : str
