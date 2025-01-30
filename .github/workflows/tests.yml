@@ -28,4 +28,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          # add the current directory to the PYTHONPATH
+          # this is needed to import src module in tests
+          PYTHONPATH: ${{ github.workspace }} 
         run: python -m unittest discover -s tests -p "test_*.py" -v
