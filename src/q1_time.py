@@ -1,7 +1,8 @@
 from typing import List, Tuple
 from datetime import datetime
 
-import pandas as pd # used to process data
+import json
+import pandas as pd
 
 def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
     """Find the top user for each of the top 10 dates with the most activity.
@@ -18,19 +19,29 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
         for each of the top 10 dates with the most activity.
     """
 
-    # Read JSON file into a DataFrame
-    df = pd.read_json(
-        file_path,
-        lines=True,          # each line is a JSON object
-        )[['date', 'user']]  # only keep 'date' and 'user' columns
+    # Read and process the JSON file line by line
+    # This is faster than using pd.read_json directly
+    # because it avoids reading the entire file
+    # consequently, it is also more memory efficient
+
+    # Use generator to avoid storing full list in memory
+    def row_generator():
+        with open(file_path, 'r') as f:
+            for line in f:
+                tweet = json.loads(line)
+                yield (
+                    tweet['date'],
+                    tweet['user']['username']
+                )
+
+    # Create DataFrame directly from generator
+    df = pd.DataFrame(
+        row_generator(),
+        columns=['date', 'username']
+    )
 
     # Convert 'date' to datetime.date and keep only the date part
-    df['date'] = df['date'].dt.date
-    # Extract 'username' from 'user' column
-    df['username'] = df['user'].apply(lambda u: u['username'])
-    # Drop 'user' column, as we no longer need it
-    df.drop('user', axis=1, inplace=True)
-
+    df['date'] = pd.to_datetime(df['date']).dt.date
     # Find top 10 dates with most activity
     n = 10
     top_dates = df['date'].value_counts().nlargest(n).reset_index()
