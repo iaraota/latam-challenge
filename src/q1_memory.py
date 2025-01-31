@@ -23,25 +23,35 @@ def q1_memory(file_path: str) -> List[Tuple[datetime.date, str]]:
         for each of the top 10 dates with the most activity.
     """
 
-    # Use generator to avoid storing full list in memory
-    def row_generator():
-        with open(file_path, 'r') as f:
-            for line in f:
-                tweet = json.loads(line)
-                tweet = json.loads(line)
-                dt = datetime.fromisoformat(tweet['date'])
-                current_date = dt.date()
-                username = tweet['user']['username']
-                yield current_date, username
-
     # Initialize counters for dates and users
     date_counts = Counter()
     user_counts = defaultdict(Counter)
+    ids = set()
 
-    # Process the file using the generator and update counters
-    for current_date, username in row_generator():
-        date_counts[current_date] += 1
-        user_counts[current_date][username] += 1
+    with open(file_path, 'r') as f:
+        for line in f:
+            tweet = json.loads(line)
+            date = datetime.fromisoformat(tweet['date']).date()
+            date_counts[date] += 1
+            user_counts[date][tweet['user']['username']] += 1
+            ids.add(tweet['id'])
+
+    # now read the quoted tweets
+    with open(file_path, 'r') as f:
+        for line in f:
+            tweet = json.loads(line)
+            queue = []
+            if tweet.get('quotedTweet'):
+                queue = [tweet.get('quotedTweet')]
+            while queue:
+                current = queue.pop(0)
+                if current['id'] not in ids:
+                    date = datetime.fromisoformat(current['date']).date()
+                    date_counts[date] += 1
+                    user_counts[date][current['user']['username']] += 1
+                    ids.add(current['id'])
+                if current.get('quotedTweet'):
+                    queue.append(current['quotedTweet'])
 
     # Get the top 10 most active dates
     top_dates = [date for date, _ in date_counts.most_common(10)]
