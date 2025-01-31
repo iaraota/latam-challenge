@@ -35,42 +35,42 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
         with open(file_path, 'r') as f:
             for line in f:
                 tweet = json.loads(line)
-                quoted_tweet = tweet.get('quotedTweet') or {}
                 yield (
                     tweet['content'],
                     tweet['id'],
-                    quoted_tweet.get('content'),
-                    quoted_tweet.get('id'),
+                    tweet['quotedTweet'],
                 )
 
     # Create DataFrame from generator
     df = pd.DataFrame(
         row_generator(),
         columns=[
-            'main_content',
-            'main_id',
-            'quoted_content',
-            'quoted_id',
+            'content',
+            'id',
+            'quotedTweet',
             ]
     )
 
-    # Get the quoted content and remove the None values
-    quoted_df = (
-        df[['quoted_content', 'quoted_id']]
-        .dropna(subset=['quoted_content', 'quoted_id'])
-    )
+    # Flatten all nested quoted tweets using a queue
+    all_quoted = []
+    queue = df['quotedTweet'].dropna().tolist()
+    while queue:
+        current = queue.pop(0)
+        all_quoted.append(current)
+        quoted = current.get('quotedTweet')
+        if quoted is not None:
+            queue.append(quoted)
 
-    # Remove quoted content that is a reply to another tweet,
-    # to avoid double counting
-    quoted_df = quoted_df[
-        ~quoted_df['quoted_id'].isin(df['main_id'])
-        ]
+    # Combine original and quoted tweets, removing duplicates
+    quoted_df = pd.DataFrame(all_quoted)
 
+    # keep only columns that are needed
+    if not quoted_df.empty:
+        quoted_df = quoted_df[['content', 'id']]
+
+    df = pd.concat([df, quoted_df], ignore_index=True).drop_duplicates(subset='id')
     # Get all the texts from the main content and quoted content
-    texts = (
-        df['main_content'].tolist() +
-        quoted_df['quoted_content'].tolist()
-    )
+    texts = df['content'].tolist()
 
     # Make a list of all the emojis in the texts
     emojis_flat = [e['emoji'] for text in texts for e in emoji.emoji_list(text)]
