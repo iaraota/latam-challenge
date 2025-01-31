@@ -31,7 +31,7 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
     # This is faster than using pd.read_json directly
     # because it avoids reading the entire file
     # consequently, it is also more memory efficient
-    def row_generator(file_path):
+    def row_generator():
         with open(file_path, 'r') as f:
             for line in f:
                 tweet = json.loads(line)
@@ -45,7 +45,7 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
 
     # Create DataFrame from generator
     df = pd.DataFrame(
-        row_generator(file_path),
+        row_generator(),
         columns=[
             'main_content',
             'main_id',
