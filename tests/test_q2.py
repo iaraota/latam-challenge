@@ -7,8 +7,8 @@ from src.q2_time import q2_time
 from src.q2_memory import q2_memory
 
 
-class TestQ1Functions(unittest.TestCase):
-    """Test suite for q2_time and q1_memory functions.
+class TestQ2Functions(unittest.TestCase):
+    """Test suite for q2_time and q2_memory functions.
     """
 
     def setUp(self):
