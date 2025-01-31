@@ -4,7 +4,6 @@ import json
 from collections import Counter
 
 import pandas as pd
-import emoji
 
 
 def q3_time(file_path: str) -> List[Tuple[str, int]]:
