@@ -37,10 +37,12 @@ class TestQ2Functions(unittest.TestCase):
         """Test with no empty quoted content and new quoted content."""
         test_data = [
             {'content': 'aa a aa a😀aa a', 'id': 1,
-                'quotedTweet': {'content': 'aa😋 aa', 'id': 2}
+                'quotedTweet': {'content': 'aa😋 aa', 'id': 2,
+                                'quotedTweet': None}
             },
             {'content': '😋', 'id': 3,
-                'quotedTweet': {'content': '🛫', 'id': 4}
+                'quotedTweet': {'content': '🛫', 'id': 4,
+                                'quotedTweet': None}
             }
         ]
         file_path = self.create_test_file(test_data)
@@ -58,10 +60,12 @@ class TestQ2Functions(unittest.TestCase):
         """Test with no empty quoted content and a repeated quoted content."""
         test_data = [
             {'content': 'aa a aa a😀aa a', 'id': 1,
-                'quotedTweet': {'content': 'aa😋 aa', 'id': 2}
+                'quotedTweet': {'content': 'aa😋 aa', 'id': 2,
+                                'quotedTweet': None}
             },
             {'content': '😋', 'id': 3,
-                'quotedTweet': {'content': 'aa a aa a😀aa a', 'id': 1}
+                'quotedTweet': {'content': 'aa a aa a😀aa a', 'id': 1,
+                                'quotedTweet': None}
             }
         ]
         file_path = self.create_test_file(test_data)
@@ -102,10 +106,12 @@ class TestQ2Functions(unittest.TestCase):
 
         test_data = [
             {'content': 'aa a aa aaa a', 'id': 1,
-                'quotedTweet': {'content': 'aa aa', 'id': 2}
+                'quotedTweet': {'content': 'aa aa', 'id': 2,
+                                'quotedTweet': None}
             },
             {'content': 'aaaba aa', 'id': 3,
-                'quotedTweet': {'content': 'aa aaa', 'id': 4}
+                'quotedTweet': {'content': 'aa aaa', 'id': 4,
+                                'quotedTweet': None}
             }
         ]
         file_path = self.create_test_file(test_data)
@@ -124,12 +130,15 @@ class TestQ2Functions(unittest.TestCase):
 
         test_data = [
             {'content': '🥳🥳🥳🥳🥳🥳🥳🥳 ❤️❤️❤️❤️❤️❤️❤️ 😁😁😁😁😁😁', 'id': 1,
-                'quotedTweet': {'content': '👀👀👀👀👀 🐶🐶🐶🐶', 'id': 2}
+                'quotedTweet': {'content': '👀👀👀👀👀 🐶🐶🐶🐶', 'id': 2,
+                                'quotedTweet': None}
             },
             {'content': '🙁😀🙁😀🙁😀🙁😀🙁😀🙁😀🙁😀🙁😀🙁😀🙁', 'id': 3,
-                'quotedTweet': {'content': '✈️✈️✈️ 😎😎 👍', 'id': 4}
+                'quotedTweet': {'content': '✈️✈️✈️ 😎😎 👍', 'id': 4,
+                                'quotedTweet': None}
             },
-            {'content': '💻💻💻💻💻💻💻💻💻💻💻', 'id': 5}
+            {'content': '💻💻💻💻💻💻💻💻💻💻💻', 'id': 5,
+             'quotedTweet': None}
         ]
         file_path = self.create_test_file(test_data)
 
@@ -140,6 +149,47 @@ class TestQ2Functions(unittest.TestCase):
         expected = [('💻', 11), ('🙁', 10), ('😀', 9), ('🥳', 8),
                     ('❤️', 7), ('😁', 6), ('👀', 5), ('🐶', 4),
                     ('✈️', 3), ('😎', 2)]
+
+        self.assertEqual(result_time, expected)
+        self.assertEqual(result_memory, expected)
+
+
+    def test_no_empty_quote_nested_quote(self):
+        """Test with no empty quoted content and nested quoted content."""
+        test_data = [
+            {
+                'content': 'aa a aa a😀aa a',
+                'id': 1,
+                'quotedTweet': {
+                    'content': 'aa😋 aa',
+                    'id': 2,
+                    'quotedTweet': {
+                        'content': '🛫🛫🛫🛫',
+                        'id': 4,
+                        'quotedTweet': None
+                        }
+                    }
+            },
+            {'content': '😋',
+             'id': 3,
+             'quotedTweet': {
+                 'content': '🛫🛫🛫🛫',
+                 'id': 4,
+                 'quotedTweet': {
+                     'content': '😋',
+                     'id': 5,
+                     'quotedTweet': None
+                    }
+                }
+            }
+        ]
+        file_path = self.create_test_file(test_data)
+
+        # Run both functions
+        result_time = q2_time(file_path)
+        result_memory = q2_memory(file_path)
+
+        expected = [('🛫', 4), ('😋', 3), ('😀', 1)]
 
         self.assertEqual(result_time, expected)
         self.assertEqual(result_memory, expected)
