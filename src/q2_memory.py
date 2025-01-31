@@ -5,7 +5,9 @@ import emoji
 
 
 def q2_memory(file_path: str) -> List[Tuple[str, int]]:
-    """Find the top user for each of the top 10 dates with the most activity.
+    """Find the top 10 emojis used in the main content of the tweets and
+    the quoted content of the tweets. Only consider quoted content that
+    is not a reply to another tweet, to avoid double counting.
 
     Note: For optimizing memory usage, we use Python objects, which doesn't
     have big overhead like Pandas DataFrames.
