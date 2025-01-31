@@ -23,8 +23,8 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
     Returns
     -------
     List[Tuple[str, int]]
-        A list of tuples containing the top 10 emoji and the number of times
-        it was used.
+        A list of tuples where each tuple contains an emoji and its count.
+        The list is sorted in descending order of the count.
     """
 
     # Use generator to avoid storing full list in memory

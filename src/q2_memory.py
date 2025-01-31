@@ -17,9 +17,9 @@ def q2_memory(file_path: str) -> List[Tuple[str, int]]:
 
     Returns
     -------
-    List[Tuple[datetime.date, str]]
-        A list of tuples containing the date and the username of the top user
-        for each of the top 10 dates with the most activity.
+    List[Tuple[str, int]]
+        A list of tuples where each tuple contains an emoji and its count.
+        The list is sorted in descending order of the count.
     """
 
     # Use generator to avoid storing full list in memory
