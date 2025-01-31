@@ -85,7 +85,6 @@ def q3_time(file_path: str) -> List[Tuple[str, int]]:
 
     # Count mentions and get top 10
     top_mentions = mentions.value_counts().head(10).reset_index()
-    top_mentions.columns = ['username', 'count']
 
     # Convert DataFrame to list of tuples
     return list(top_mentions.itertuples(index=False, name=None))
