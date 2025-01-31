@@ -1,5 +1,4 @@
 from typing import List, Tuple
-
 import json
 
 import pandas as pd
@@ -36,53 +35,60 @@ def q3_time(file_path: str) -> List[Tuple[str, int]]:
         with open(file_path, 'r') as f:
             for line in f:
                 tweet = json.loads(line)
-                quoted_tweet = tweet.get('quotedTweet') or {}
                 yield (
-                    tweet['content'],
                     tweet['id'],
-                    tweet['user']['username'],
-                    quoted_tweet.get('content'),
-                    quoted_tweet.get('id'),
+                    tweet['mentionedUsers'],
+                    tweet['quotedTweet'],
                 )
 
     # Create DataFrame from generator
     df = pd.DataFrame(
         row_generator(),
         columns=[
-            'main_content',
-            'main_id',
-            'username',
-            'quoted_content',
-            'quoted_id',
+            'id',
+            'mentionedUsers',
+            'quotedTweet',
             ]
     )
 
-    # Get the quoted content and remove the None values
-    quoted_df = (
-        df[['quoted_content', 'quoted_id']]
+    # Flatten all nested quoted tweets using a queue
+    all_quoted = []
+    queue = df['quotedTweet'].dropna().tolist()
+    while queue:
+        current = queue.pop(0)
+        all_quoted.append(current)
+        quoted = current.get('quotedTweet')
+        if quoted is not None:
+            queue.append(quoted)
+
+    # Combine original and quoted tweets, removing duplicates
+    quoted_df = pd.DataFrame(all_quoted)
+
+    # keep only columns that are needed
+    if not quoted_df.empty:
+        quoted_df = quoted_df[['id', 'mentionedUsers', 'quotedTweet']]
+
+    # Combine original and quoted tweets, removing duplicates
+    df = pd.concat([df, quoted_df], ignore_index=True).drop_duplicates(subset='id')
+
+    # Transform mentionedUsers column, which is a list of dictionaries,
+    # into a dataframe and get the username column
+
+    username = pd.json_normalize(
+        df['mentionedUsers']
         .dropna()
-    )
+        .explode()
+        .reset_index(drop=True)
+        )
 
-    # Remove quoted content that is a reply to another tweet,
-    # to avoid double counting
-    quoted_df = quoted_df[
-        ~quoted_df['quoted_id'].isin(df['main_id'])
-        ]
+    if not username.empty:
+        username = username['username']
+    else:
+        return []
 
-    # Combine main and valid quoted content
-    main_texts = df['main_content']
-    quoted_texts = quoted_df['quoted_content']
-    all_texts = pd.concat([main_texts, quoted_texts])
+    # Count the number of mentions for each username
+    # and get the top 10
+    top_mentions = username.value_counts().head(10).reset_index()
 
-    # Extract mentions from all texts
-    mentions = all_texts.str.findall(r'@(\w+)').explode().dropna()
-
-    # Drop mentions that are not usernames
-    usernames = df['username'].unique()
-    mentions = mentions[mentions.isin(usernames)]
-
-    # Count mentions and get top 10
-    top_mentions = mentions.value_counts().head(10).reset_index()
-
-    # Convert DataFrame to list of tuples
-    return list(top_mentions.itertuples(index=False, name=None))
+    # Convert to list of tuples and return
+    return top_mentions.to_records(index=False).tolist()

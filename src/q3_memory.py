@@ -25,54 +25,37 @@ def q3_memory(file_path: str) -> List[Tuple[str, int]]:
         and the count of mentions each one receives.
     """
 
-    # Use generator to avoid storing full json in memory
-    def row_generator():
-        with open(file_path, 'r') as f:
-            for line in f:
-                tweet = json.loads(line)
-                quoted_tweet = tweet.get('quotedTweet') or {}
-                yield (
-                    tweet['content'],
-                    tweet['id'],
-                    tweet['user']['username'],
-                    quoted_tweet.get('content'),
-                    quoted_tweet.get('id'),
-                )
-
     # Initialize dictionaries to store the main and quoted content
-    # and usernames
-    main = defaultdict(str)
-    quoted = defaultdict(str)
-    usernames = set()
+    mentioned = Counter()
+    ids = set()
 
-    # Store the main and quoted content in the dictionaries
-    for content, main_id, user, quoted_content, quoted_id in row_generator():
-        main[main_id] = content
-        # Only store the quoted content if it exists,
-        # this is good for memory optimization
-        if quoted_content:
-            quoted[quoted_id] = quoted_content
-        usernames.add(user)
+    with open(file_path, 'r') as f:
+        for line in f:
+            tweet = json.loads(line)
+            ids.add(tweet['id'])
+            # count mentions username
+            if tweet.get('mentionedUsers'):
+                for mention in tweet['mentionedUsers']:
+                    username = mention['username']
+                    mentioned[username] += 1
 
-    # remove quotes that are replies, that is, there exists a main tweet
-    # with the same id as the quoted tweet. This avoids duplicates
-    main_ids = set(main.keys())
-    quoted = {k: v for k, v in quoted.items() if k not in main_ids}
 
-    # Get all the texts from the main content and quoted content
-    texts = (
-        list(main.values()) +
-        list(quoted.values())
-    )
-
-    # Extract mentions from the texts, and filter out
-    # mentions that are not in the usernames
-    mentions = [
-        mention
-        for text in texts
-        for mention in re.findall(r'@(\w+)', text)
-        if mention in usernames
-    ]
-
-    # Count the mentions and return the top 10
-    return Counter(mentions).most_common(10)
+    # now read the quoted tweets
+    with open(file_path, 'r') as f:
+        for line in f:
+            tweet = json.loads(line)
+            queue = []
+            if tweet.get('quotedTweet'):
+                queue = [tweet.get('quotedTweet')]
+            while queue:
+                current = queue.pop(0)
+                if current['id'] not in ids:
+                    if current.get('mentionedUsers'):
+                        for mention in current['mentionedUsers']:
+                            username = mention['username']
+                            mentioned[username] += 1
+                    ids.add(current['id'])
+                if current.get('quotedTweet'):
+                    queue.append(current['quotedTweet'])
+    # Count the mentions and select the top 10
+    return mentioned.most_common(10)
