@@ -64,7 +64,11 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
             queue.append(quoted)
 
     # Combine original and quoted tweets, removing duplicates
-    quoted_df = pd.DataFrame(all_quoted)
+    quoted_df = pd.DataFrame(all_quoted).drop_duplicates(subset='id')
+    # keep only columns that are needed
+    if not quoted_df.empty:
+        quoted_df = quoted_df[['date', 'id', 'user']]
+    # quoted_df = quoted_df[['date', 'id', 'user']]
     df = pd.concat([df, quoted_df], ignore_index=True).drop_duplicates(subset='id')
 
     # Extract the 'date' and 'username' columns
