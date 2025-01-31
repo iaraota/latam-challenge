@@ -23,11 +23,11 @@ def q1_memory(file_path: str) -> List[Tuple[datetime.date, str]]:
         for each of the top 10 dates with the most activity.
     """
 
-    # Generator function to process lines in the file
-    # using a generator to avoid loading the entire file into memory
-    def read_json_lines(file_path):
-        with open(file_path, 'r') as file:
-            for line in file:
+    # Use generator to avoid storing full list in memory
+    def row_generator():
+        with open(file_path, 'r') as f:
+            for line in f:
+                tweet = json.loads(line)
                 tweet = json.loads(line)
                 dt = datetime.fromisoformat(tweet['date'])
                 current_date = dt.date()
@@ -39,7 +39,7 @@ def q1_memory(file_path: str) -> List[Tuple[datetime.date, str]]:
     user_counts = defaultdict(Counter)
 
     # Process the file using the generator and update counters
-    for current_date, username in read_json_lines(file_path):
+    for current_date, username in row_generator():
         date_counts[current_date] += 1
         user_counts[current_date][username] += 1
 

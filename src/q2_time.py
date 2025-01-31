@@ -23,15 +23,15 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
     Returns
     -------
     List[Tuple[str, int]]
-        A list of tuples containing the top 10 emoji and the number of times
-        it was used.
+        A list of tuples where each tuple contains an emoji and its count.
+        The list is sorted in descending order of the count.
     """
 
     # Use generator to avoid storing full list in memory
     # This is faster than using pd.read_json directly
     # because it avoids reading the entire file
     # consequently, it is also more memory efficient
-    def row_generator(file_path):
+    def row_generator():
         with open(file_path, 'r') as f:
             for line in f:
                 tweet = json.loads(line)
@@ -45,7 +45,7 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
 
     # Create DataFrame from generator
     df = pd.DataFrame(
-        row_generator(file_path),
+        row_generator(),
         columns=[
             'main_content',
             'main_id',
