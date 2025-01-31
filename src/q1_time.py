@@ -28,20 +28,48 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
     # consequently, it is also more memory efficient
 
     # Use generator to avoid storing full list in memory
+    # This is faster than using pd.read_json directly
+    # because it avoids reading the entire file
+    # consequently, it is also more memory efficient
     def row_generator():
         with open(file_path, 'r') as f:
             for line in f:
                 tweet = json.loads(line)
                 yield (
                     tweet['date'],
-                    tweet['user']['username']
+                    tweet['id'],
+                    tweet['user'],
+                    tweet['quotedTweet'],
                 )
 
-    # Create DataFrame directly from generator
+    # Create DataFrame from generator
     df = pd.DataFrame(
         row_generator(),
-        columns=['date', 'username']
+        columns=[
+            'date',
+            'id',
+            'user',
+            'quotedTweet',
+            ]
     )
+
+    # Flatten all nested quoted tweets using a queue
+    all_quoted = []
+    queue = df['quotedTweet'].dropna().tolist()
+    while queue:
+        current = queue.pop(0)
+        all_quoted.append(current)
+        quoted = current.get('quotedTweet')
+        if quoted is not None:
+            queue.append(quoted)
+
+    # Combine original and quoted tweets, removing duplicates
+    quoted_df = pd.DataFrame(all_quoted)
+    df = pd.concat([df, quoted_df], ignore_index=True).drop_duplicates(subset='id')
+
+    # Extract the 'date' and 'username' columns
+    df['username'] = df['user'].apply(lambda x: x['username'])
+    df = df[['date', 'username']]
 
     # Convert 'date' to datetime.date and keep only the date part
     df['date'] = pd.to_datetime(df['date']).dt.date
@@ -61,7 +89,7 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
         .apply(lambda g: g['username']    # get the username with most activity
                .value_counts().idxmax())
         .sort_index(level='rank',         # sort by rank
-                    ascending=True)  
+                    ascending=True)
         .droplevel('rank')                # remove rank
     )
 
