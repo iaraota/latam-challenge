@@ -44,18 +44,24 @@ def q3_memory(file_path: str) -> List[Tuple[str, int]]:
     with open(file_path, 'r') as f:
         for line in f:
             tweet = json.loads(line)
+            # create a queue to process the quoted tweets
             queue = []
             if tweet.get('quotedTweet'):
                 queue = [tweet.get('quotedTweet')]
             while queue:
+                # pop the first element
                 current = queue.pop(0)
                 if current['id'] not in ids:
+                    # count mentions username
                     if current.get('mentionedUsers'):
                         for mention in current['mentionedUsers']:
                             username = mention['username']
                             mentioned[username] += 1
                     ids.add(current['id'])
+                # add the quoted tweet of the current tweet to the queue
+                # if it exists
                 if current.get('quotedTweet'):
                     queue.append(current['quotedTweet'])
+
     # Count the mentions and select the top 10
     return mentioned.most_common(10)

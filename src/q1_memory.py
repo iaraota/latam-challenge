@@ -40,17 +40,22 @@ def q1_memory(file_path: str) -> List[Tuple[datetime.date, str]]:
     with open(file_path, 'r') as f:
         for line in f:
             tweet = json.loads(line)
+            # create a queue to process the quoted tweets
             queue = []
             if tweet.get('quotedTweet'):
                 queue = [tweet.get('quotedTweet')]
             while queue:
+                # pop the first tweet from the queue
                 current = queue.pop(0)
+                # process the tweet if it hasn't been processed yet
                 if current['id'] not in ids:
                     date = datetime.fromisoformat(current['date']).date()
                     date_counts[date] += 1
                     user_counts[date][current['user']['username']] += 1
                     ids.add(current['id'])
+                # get the next quoted tweet if it exists
                 if current.get('quotedTweet'):
+                    # append the quoted tweet to the queue
                     queue.append(current['quotedTweet'])
 
     # Get the top 10 most active dates

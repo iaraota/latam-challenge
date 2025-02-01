@@ -53,11 +53,16 @@ def q3_time(file_path: str) -> List[Tuple[str, int]]:
 
     # Flatten all nested quoted tweets using a queue
     all_quoted = []
+    # Create a queue to process quoted tweets
     queue = df['quotedTweet'].dropna().tolist()
     while queue:
+        # Pop the first element from the queue
         current = queue.pop(0)
+        # Add to the list of all quoted tweets
         all_quoted.append(current)
+        # Get the next quoted tweet
         quoted = current.get('quotedTweet')
+        # If there is a quoted tweet, add to the queue
         if quoted is not None:
             queue.append(quoted)
 
@@ -73,7 +78,6 @@ def q3_time(file_path: str) -> List[Tuple[str, int]]:
 
     # Transform mentionedUsers column, which is a list of dictionaries,
     # into a dataframe and get the username column
-
     username = pd.json_normalize(
         df['mentionedUsers']
         .dropna()
@@ -81,8 +85,10 @@ def q3_time(file_path: str) -> List[Tuple[str, int]]:
         .reset_index(drop=True)
         )
 
+    # Get the username column
     if not username.empty:
         username = username['username']
+    # If no usernames are found, return empty list
     else:
         return []
 

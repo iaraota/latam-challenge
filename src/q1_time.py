@@ -55,11 +55,16 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
 
     # Flatten all nested quoted tweets using a queue
     all_quoted = []
+    # Create a queue to process the quoted tweets
     queue = df['quotedTweet'].dropna().tolist()
     while queue:
+        # pop the first tweet from the queue
         current = queue.pop(0)
+        # add the tweet to the list of all quoted tweets
         all_quoted.append(current)
+        # get the next quoted tweet
         quoted = current.get('quotedTweet')
+        # append the quoted tweet to the queue if it exists
         if quoted is not None:
             queue.append(quoted)
 
