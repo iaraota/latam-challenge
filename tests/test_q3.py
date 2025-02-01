@@ -37,21 +37,24 @@ class TestQ3Functions(unittest.TestCase):
         """Test with mentions in all contents."""
         test_data = [
             {
-                "content": "@user1 @user2",
+                "mentionedUsers": [
+                    {"username": "user1"},
+                    {"username": "user2"}
+                    ],
                 "id": 1,
-                "user": {"username": "user1"},
                 "quotedTweet": {
-                    "content": "Hi a@user2",
-                    "id": 2
+                    "mentionedUsers": [{"username": "user2"}],
+                    "id": 2,
+                    "quotedTweet": None,
                 }
             },
             {
-                "content": "@user1",
+                "mentionedUsers": [{"username": "user1"}],
                 "id": 3,
-                "user": {"username": "user2"},
                 "quotedTweet":  {
-                    "content": "a@user2",
-                    "id": 4
+                    "mentionedUsers": [{"username": "user2"}],
+                    "id": 4,
+                    "quotedTweet": None,
                 }
             }
         ]
@@ -70,21 +73,29 @@ class TestQ3Functions(unittest.TestCase):
         """Test with repeated quoted content."""
         test_data = [
             {
-                "content": "@user1 @user2",
+                "mentionedUsers": [
+                    {"username": "user1"},
+                    {"username": "user2"}
+                    ],
                 "id": 1,
                 "user": {"username": "user1"},
                 "quotedTweet": {
-                    "content": "Hi a@user1",
-                    "id": 2
+                    "mentionedUsers": [{"username": "user1"}],
+                    "id": 2,
+                    "quotedTweet": None,
                 }
             },
             {
-                "content": "@user1",
+                "mentionedUsers": [{"username": "user1"}],
                 "id": 3,
                 "user": {"username": "user2"},
                 "quotedTweet":  {
-                    "content": "@user1 @user2",
-                    "id": 1
+                    "mentionedUsers": [
+                        {"username": "user1"},
+                        {"username": "user2"}
+                    ],
+                    "id": 1,
+                    "quotedTweet": None,
                 }
             }
         ]
@@ -103,13 +114,16 @@ class TestQ3Functions(unittest.TestCase):
         """Test with no quoted content."""
         test_data = [
             {
-                "content": "@user1 @user2",
+                "mentionedUsers": [
+                    {"username": "user1"},
+                    {"username": "user2"}
+                    ],
                 "id": 1,
                 "user": {"username": "user1"},
                 "quotedTweet": None
             },
             {
-                "content": "@user1",
+                "mentionedUsers": [{"username": "user1"}],
                 "id": 2,
                 "user": {"username": "user2"},
                 "quotedTweet":  None
@@ -126,53 +140,28 @@ class TestQ3Functions(unittest.TestCase):
         self.assertEqual(result_time, expected)
         self.assertEqual(result_memory, expected)
 
-    def test_mention_not_username(self):
-        """Test with mention that is not a username."""
-        test_data = [
-            {
-                "content": "@user1 @user2",
-                "id": 1,
-                "user": {"username": "user1"},
-                "quotedTweet": None
-            },
-            {
-                "content": "@user3",
-                "id": 2,
-                "user": {"username": "user2"},
-                "quotedTweet":  None
-            }
-        ]
-        file_path = self.create_test_file(test_data)
-
-        # Run both functions
-        result_time = q3_time(file_path)
-        result_memory = q3_memory(file_path)
-
-        expected = [('user1', 1), ('user2', 1)]
-
-        self.assertEqual(result_time, expected)
-        self.assertEqual(result_memory, expected)
-
     def test_no_mention(self):
         """Test with no mention."""
 
         test_data = [
             {
-                "content": "aaa aa aaa",
+                "mentionedUsers": None,
                 "id": 1,
                 "user": {"username": "user1"},
                 "quotedTweet": {
-                    "content": "aaaaa aaaa",
-                    "id": 2
+                    "mentionedUsers": None,
+                    "id": 2,
+                    "quotedTweet": None,
                 }
             },
             {
-                "content": "aaaa aaaa",
+                "mentionedUsers": None,
                 "id": 3,
                 "user": {"username": "user2"},
                 "quotedTweet":  {
-                    "content": "a",
-                    "id": 4
+                    "mentionedUsers": None,
+                    "id": 4,
+                    "quotedTweet": None,
                 }
             }
         ]
