@@ -41,14 +41,19 @@ def q2_memory(file_path: str) -> List[Tuple[str, int]]:
         for line in f:
             tweet = json.loads(line)
             queue = []
+            # create a queue to process the quoted tweets
             if tweet.get('quotedTweet'):
                 queue = [tweet.get('quotedTweet')]
             while queue:
+                # pop the first tweet from the queue
                 current = queue.pop(0)
+                # process the tweet if it hasn't been processed yet
                 if current['id'] not in ids:
                     content[current['id']] = current['content']
                     ids.add(current['id'])
+                # get the next quoted tweet if it exists
                 if current.get('quotedTweet'):
+                    # append the quoted tweet to the queue
                     queue.append(current['quotedTweet'])
 
     # Get all the texts from tweets
